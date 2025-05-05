@@ -1,5 +1,6 @@
 package com.abhi.jobsapp.navigation
 
+import JobDetailScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
@@ -23,7 +24,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.abhi.jobsapp.screens.Bookmarks
-import com.abhi.jobsapp.screens.JobDetailScreen
 import com.abhi.jobsapp.screens.Jobs
 
 
@@ -55,10 +55,11 @@ fun BottomNav(
             composable(
                 route = Routes.JobDetail.route,
                 arguments = listOf(navArgument("jobId") { type = NavType.IntType })
-                ) { backStackEntry ->
-                    val jobId = backStackEntry.arguments?.getInt("jobId") ?: 0
-                    JobDetailScreen(jobId = jobId)
-                }
+            ) { backStackEntry ->
+                val jobId = backStackEntry.arguments?.getInt("jobId") ?: 0
+                JobDetailScreen(jobId = jobId , navHostController)
+            }
+
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.abhi.jobsapp.navigation
 
+import JobDetailScreen
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
@@ -10,7 +11,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.abhi.jobsapp.screens.Bookmarks
-import com.abhi.jobsapp.screens.JobDetailScreen
 import com.abhi.jobsapp.screens.Jobs
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -38,7 +38,8 @@ fun NavGraph(
             arguments = listOf(navArgument("jobId") { type = NavType.IntType })
         ) { backStackEntry ->
             val jobId = backStackEntry.arguments?.getInt("jobId") ?: 0
-            JobDetailScreen(jobId = jobId)
+            JobDetailScreen(jobId = jobId , navHostController)
         }
+
     }
 }
