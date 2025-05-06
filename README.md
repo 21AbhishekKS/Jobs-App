@@ -33,6 +33,6 @@ https://drive.google.com/file/d/1R1WIIkZo-0P-8UklFArvFKlWrndzLaJN/view?usp=drive
 
 | Jobs Screen                                  | Job Detail Screen                              | Bookmark Screen                                |
 | :-------------------------------------------: | :---------------------------------------------: | :---------------------------------------------: |
-|<img src="https://github.com/user-attachments/assets/414aec35-c3d9-49a0-b54b-4fdce9f51b8c" alt="Bookmark Screen" width="300"/>  |  <img src="https://github.com/user-attachments/assets/32a77b8c-e9f3-4f9b-9e6b-a72ef91fa5a0" alt="Jobs Screen" width="300"/>|<img src="https://github.com/user-attachments/assets/94d56331-cde2-4cf8-b0a0-bba3498f6b85" alt="Job Detail Screen" width="300"/>  |
+|<img src="https://github.com/user-attachments/assets/ac8bac5d-b7ad-4366-85c6-4f5607fd0339" alt="Bookmark Screen" width="300"/>  |  <img src="https://github.com/user-attachments/assets/32a77b8c-e9f3-4f9b-9e6b-a72ef91fa5a0" alt="Jobs Screen" width="300"/>|<img src="https://github.com/user-attachments/assets/94d56331-cde2-4cf8-b0a0-bba3498f6b85" alt="Job Detail Screen" width="300"/>  |
 
 
