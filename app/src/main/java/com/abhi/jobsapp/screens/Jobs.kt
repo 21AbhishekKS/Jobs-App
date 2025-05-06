@@ -1,31 +1,38 @@
 package com.abhi.jobsapp.screens
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.abhi.jobsapp.model.JobEntity
 import com.abhi.jobsapp.navigation.Routes
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.request.get
-import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.launch
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import com.abhi.jobsapp.viewModels.JobItem
+import com.abhi.jobsapp.viewModels.JobsViewModel
+
 
 @Composable
 fun Jobs(
@@ -43,7 +50,8 @@ fun Jobs(
         onJobClick = { jobId ->
             navController.navigate(Routes.JobDetail.createRoute(jobId))
         },
-        modifier = Modifier
+        modifier = Modifier,
+        viewModel
     )
 }
 
@@ -54,16 +62,58 @@ private fun JobsContent(
     error: String?,
     onLoadMore: () -> Unit,
     onJobClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: JobsViewModel
 ) {
     val listState = rememberLazyListState()
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize().background(Color.White)) {
         if (error != null) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text(text = "Error: $error", color = MaterialTheme.colorScheme.error)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Server Error",
+                            tint = Color(0xFFD32F2F),
+                            modifier = Modifier.size(48.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "Server Busy (503)",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = Color(0xFFD32F2F),
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "We're experiencing high traffic right now.\nPlease try again in a few moments.",
+                            color = Color.DarkGray,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
             }
         }
+
 
         if (jobs.isEmpty() && isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -78,8 +128,11 @@ private fun JobsContent(
                 items(jobs) { job ->
                     JobCard(
                         job = job,
-                        onClick = { onJobClick(job.id ?: 0) }
+                        onClick = { onJobClick(job.id ?: 0) },
+                        viewModel = viewModel
                     )
+
+
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
@@ -117,101 +170,144 @@ private fun JobsContent(
 fun JobCard(
     job: JobItem,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    viewModel: JobsViewModel
 ) {
+    val favoriteJobs by viewModel.favoriteJobs.collectAsState()
+    val jobId = job.id ?: -1
+    val isFavorite = favoriteJobs.contains(jobId)
+
     Card(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable(onClick = onClick),
+            .border(1.dp, Color(0xFFFFC107), shape = RoundedCornerShape(8.dp))
+            .clickable { onClick() },
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = job.title ?: "No Title", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Location: ${job.primary_details?.Place ?: "Not specified"}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Salary: ${job.primary_details?.Salary ?: "Not specified"}",
-                style = MaterialTheme.typography.bodyMedium
-            )
+        Column(modifier = Modifier.padding(12.dp)) {
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = job.title ?: "No Title",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF0D47A1)
+                    )
+                    Text(
+                        text = job.primary_details?.Salary ?: "No Salary",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                    Text(
+                        //job.company_name ?:
+                        text =  "Unknown Company",
+                        color = Color.Gray,
+                        fontSize = 13.sp
+                    )
+                }
+
+                IconButton(
+                    onClick = {
+                        viewModel.toggleFavorite(
+                            JobEntity(
+                                id = jobId,
+                                title = job.title,
+                                place = job.primary_details?.Place,
+                                salary = job.primary_details?.Salary,
+                                description = job.description,
+                                customLink = job.custom_link
+                            )
+                        )
+                    },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = "Toggle Favorite",
+                        tint = if (isFavorite) Color.Red else Color.Gray
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row {
+                Text(
+                    //job.vacancies ?:
+                    text = "${"0"} vacancies",
+                    color = Color(0xFF1565C0),
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .background(Color(0xFFE3F2FD), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Work from home",
+                    color = Color(0xFF6A1B9A),
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .background(Color(0xFFF3E5F5), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.Place, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = job.primary_details?.Place ?: "No Location",
+                    color = Color.Gray,
+                    fontSize = 13.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                OutlinedButton(
+                    onClick = { /* TODO: Share logic */ },
+                    modifier = Modifier.weight(1f),
+                    border = BorderStroke(1.dp, Color.Black),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 0.dp)
+                ) {
+                    Icon(Icons.Default.Share, contentDescription = "Share")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "Share")
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = {  },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(Icons.Default.Call, contentDescription = "Call HR")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "Call HR")
+                }
+            }
         }
     }
 }
 
-data class JobsState(
-    val jobs: List<JobItem> = emptyList(),
-    val isLoading: Boolean = false,
-    val error: String? = null
-)
 
-class JobsViewModel : ViewModel() {
-    private val _state = mutableStateOf(JobsState())
-    val state: JobsState get() = _state.value
 
-    private var currentPage = 1
-    private var hasMorePages = true
 
-    init {
-        loadJobs()
-    }
 
-    fun loadJobs() {
-        if (_state.value.isLoading || !hasMorePages) return
-
-        _state.value = _state.value.copy(isLoading = true, error = null)
-
-        viewModelScope.launch {
-            try {
-                val response = fetchJobs(currentPage)
-                _state.value = _state.value.copy(
-                    jobs = _state.value.jobs + response.results,
-                    isLoading = false
-                )
-                currentPage++
-                hasMorePages = response.results.isNotEmpty()
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to load jobs"
-                )
-            }
-        }
-    }
-
-    private suspend fun fetchJobs(page: Int): JobResponse {
-        val client = HttpClient(CIO) {
-            install(ContentNegotiation) {
-                json(Json {
-                    ignoreUnknownKeys = true
-                    explicitNulls = false
-                })
-            }
-        }
-        return client.get("https://testapi.getlokalapp.com/common/jobs?page=$page").body()
-    }
-}
-
-@Serializable
-data class JobResponse(
-    @SerialName("results") val results: List<JobItem> = emptyList()
-)
-
-@Serializable
-data class JobItem(
-    @SerialName("id") val id: Int? = null,
-    @SerialName("title") val title: String? = null,
-    @SerialName("primary_details") val primary_details: PrimaryDetails? = null,
-    @SerialName("description") val description: String? = null,
-    @SerialName("requirements") val requirements: List<String>? = null,
-    @SerialName("custom_link") val custom_link: String? = null
-)
-
-@Serializable
-data class PrimaryDetails(
-    @SerialName("Place") val Place: String? = null,
-    @SerialName("Salary") val Salary: String? = null
-)

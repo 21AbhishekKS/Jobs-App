@@ -1,11 +1,21 @@
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -20,7 +30,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun JobDetailScreen(
     jobId: Int,
@@ -30,7 +39,6 @@ fun JobDetailScreen(
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    // Fetch job details when screen loads or jobId changes
     LaunchedEffect(jobId) {
         isLoading = true
         error = null
@@ -47,70 +55,161 @@ fun JobDetailScreen(
         }
     }
 
-    // Scaffold with back button
-//    Scaffold(
-//        topBar = {
-//            TopAppBar(
-//                title = { Text("Job Details") },
-//                navigationIcon = {
-//                    IconButton(onClick = { navController.popBackStack() }) {
-//                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-//                    }
-//                }
-//            )
-//        }
-//    ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(5.dp)
+                .padding()
+                .padding(horizontal = 16.dp)
         ) {
             when {
                 isLoading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
                 error != null -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "Error: $error", color = MaterialTheme.colorScheme.error)
-                    }
+                    Text(
+                        text = "Error: $error",
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
                 job != null -> {
                     JobDetailContent(job = job!!)
                 }
                 else -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("No job details found")
-                    }
+                    Text(
+                        text = "No job details found",
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
             }
         }
     }
-//}
+
+
 
 @Composable
 fun JobDetailContent(job: JobItem) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.White
     ) {
-        Text(text = job.title ?: "No Title", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Location: ${job.primary_details?.Place ?: "Not specified"}")
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Salary: ${job.primary_details?.Salary ?: "Not specified"}")
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Description:", style = MaterialTheme.typography.titleMedium)
-        Text(text = job.description ?: "No description available")
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Requirements:", style = MaterialTheme.typography.titleMedium)
-        job.requirements?.forEach { requirement ->
-            Text(text = "• $requirement")
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = job.title ?: "No Title",
+                style = MaterialTheme.typography.headlineSmall.copy(color = Color.Black)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row {
+                Text(
+                    text = "${"0"} vacancies",
+                    color = Color(0xFF1565C0),
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .background(Color(0xFFE3F2FD), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Work from home",
+                    color = Color(0xFF6A1B9A),
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .background(Color(0xFFF3E5F5), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Place,
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = job.primary_details?.Place ?: "No Location",
+                    color = Color.Gray,
+                    fontSize = 13.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Salary: ${job.primary_details?.Salary ?: "Not specified"}",
+                color = Color.Black,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Description:",
+                style = MaterialTheme.typography.titleMedium.copy(color = Color.Black)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = job.description ?: "No description available",
+                color = Color.DarkGray
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Requirements:",
+                style = MaterialTheme.typography.titleMedium.copy(color = Color.Black)
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            job.requirements?.forEach { requirement ->
+                Text(text = "• $requirement", color = Color.DarkGray)
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                OutlinedButton(
+                    onClick = { /* TODO: Share logic */ },
+                    modifier = Modifier.weight(1f),
+                    border = BorderStroke(1.dp, Color.Black),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(Icons.Default.Share, contentDescription = "Share", tint = Color.Black)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "Share", color = Color.Black)
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = {  },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFC107)),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Icon(Icons.Default.Call, contentDescription = "Call HR", tint = Color.Black)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(text = "Call HR", color = Color.Black)
+                }
+            }
         }
     }
 }
+
+
 
     @kotlinx.serialization.Serializable
     data class JobsResponse(

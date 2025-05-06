@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     kotlin("plugin.serialization") version "1.9.0"
+   //for room DB
+    id("kotlin-kapt")
+
 }
 
 android {
@@ -86,4 +89,14 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    //Room
+    implementation ("androidx.room:room-runtime:2.7.1")
+    kapt ("androidx.room:room-compiler:2.7.1")
+    implementation ("androidx.room:room-ktx:2.7.1")
+
+
+
 }
+
+

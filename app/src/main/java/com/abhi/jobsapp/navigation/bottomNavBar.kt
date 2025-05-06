@@ -6,15 +6,18 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -70,14 +73,16 @@ fun MyBottomBar(navController: NavHostController) {
 
     val items = listOf(
         BottomNavItem(Routes.Jobs.route, "Jobs", Icons.Filled.Home, Icons.Outlined.Home),
-        BottomNavItem(Routes.Bookmarks.route, "Bookmarks", Icons.Filled.Star, Icons.Outlined.Star)
+        BottomNavItem(Routes.Bookmarks.route, "Bookmarks", Icons.Filled.Favorite, Icons.Outlined.Favorite)
     )
-
+    Column {
+        Divider(color = Color.Gray, thickness = 0.5.dp)
     NavigationBar(
         containerColor = Color.White
     ) {
         items.forEach { item ->
             val selected = item.route == backStackEntry.value?.destination?.route
+
             NavigationBarItem(
                 selected = selected,
                 onClick = {
@@ -92,19 +97,28 @@ fun MyBottomBar(navController: NavHostController) {
                     Icon(
                         imageVector = if (selected) item.selectedIcon else item.unSelectedIcon,
                         contentDescription = item.title,
-                        tint = if (selected) Color(0xFF3B6AD3) else Color.Black
                     )
                 },
                 label = {
                     Text(
                         text = item.title,
-                        color = if (selected) Color(0xFF3B6AD3) else Color.Black
+                        color = if (selected) Color.Black else Color.Black
                     )
-                }
+                },
+                alwaysShowLabel = true,
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = Color(0xFFFFC107),
+                    selectedIconColor = Color.White,
+                    unselectedIconColor = Color(0xFFFFC107),
+                    selectedTextColor = Color(0xFFFFC107),
+                    unselectedTextColor = Color.Black
+                )
             )
         }
     }
+    }
 }
+
 
 data class BottomNavItem(
     val route: String,
