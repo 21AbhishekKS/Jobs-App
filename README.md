@@ -27,7 +27,7 @@
    * Ensures a smooth user experience across network and UI events.
 
 ## Demo Video! 🎬
-[https://youtube.com/shorts/KUIyJagInlo?feature=share](https://youtube.com/shorts/KpToO2V1r8w?feature=share)
+https://drive.google.com/file/d/1R1WIIkZo-0P-8UklFArvFKlWrndzLaJN/view?usp=drive_link
 
 ## Screenshots
 
